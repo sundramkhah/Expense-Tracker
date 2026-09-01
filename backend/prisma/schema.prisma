@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  password     String
+  transactions Transaction[]
+  budgets      Budget[]
+  recurring    Recurring[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  amount      Decimal
+  category    String
+  description String   @default("")
+  date        DateTime
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, date])
+}
+
+model Budget {
+  id        String   @id @default(uuid())
+  userId    String
+  category  String
+  limit     Decimal
+  month     String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, category, month])
+}
+
+model Recurring {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  amount      Decimal
+  category    String
+  description String   @default("")
+  frequency   String
+  nextDate    DateTime
+  active      Boolean  @default(true)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
